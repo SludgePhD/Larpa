@@ -6,6 +6,7 @@ license.workspace = true
 repository.workspace = true
 documentation.workspace = true
 rust-version.workspace = true
+description = "Derive macros for the `larpa` crate. Do not use. Use `larpa` directly instead."
 
 [lib]
 proc-macro = true

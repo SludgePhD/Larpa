@@ -7,6 +7,8 @@ license.workspace = true
 repository.workspace = true
 documentation.workspace = true
 rust-version.workspace = true
+categories = ["command-line-utilities", "command-line-interface"]
+keywords = ["command", "line", "option", "derive"]
 
 [dependencies]
 larpa-derive.workspace = true
