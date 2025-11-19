@@ -3,8 +3,11 @@
 //! The measurement result is printed to stdout and made available as a GitHub Actions run summary.
 //! <https://github.blog/news-insights/product-news/supercharging-github-actions-with-job-summaries/>
 
+#![cfg(test)]
+
 use std::{
-    env,
+    env::{self, consts::EXE_SUFFIX},
+    error::Error,
     ffi::OsStr,
     fs::File,
     io::{self, Seek, SeekFrom, Write},
@@ -14,6 +17,8 @@ use std::{
 /// The list of examples we're measuring.
 const EXAMPLES: &[&str] = &["rosetta", "grit"];
 
+type Result<T> = std::result::Result<T, Box<dyn Error>>;
+
 fn cargo(args: &[impl AsRef<OsStr>]) {
     let status = Command::new(env::var_os("CARGO").expect("`$CARGO` is not set"))
         .args(args)
@@ -22,7 +27,7 @@ fn cargo(args: &[impl AsRef<OsStr>]) {
     assert!(status.success());
 }
 
-fn size(example: &str, features: &str) -> io::Result<u64> {
+fn size(example: &str, features: &str) -> Result<u64> {
     cargo(&[
         "build",
         "--release",
@@ -34,12 +39,15 @@ fn size(example: &str, features: &str) -> io::Result<u64> {
         features,
     ]);
 
-    let mut f = File::open(format!("target/release/examples/{example}"))?;
+    let mut f = File::open(format!(
+        "../../target/release/examples/{example}{EXE_SUFFIX}"
+    ))
+    .map_err(|e| format!("{e} (pwd: {})", env::current_dir().unwrap().display()))?;
     f.seek(SeekFrom::End(0))?;
-    f.stream_position()
+    Ok(f.stream_position()?)
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<()> {
     let mut summary = None;
     if let Some(step) = env::var_os("GITHUB_STEP_SUMMARY") {
         summary = Some(File::options().append(true).create(true).open(step)?);
