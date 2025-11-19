@@ -54,3 +54,16 @@ struct Shredder {
     file: PathBuf,
 }
 ```
+
+## Rust Version Support
+
+This library targets the latest Rust version.
+
+Older Rust versions are supported by equally older versions of this crate. For example, to use a
+version of Rust that was succeeded 6 months ago, you'd also use an at least 6 month old version of
+this library.
+
+Compatibility with older Rust versions may be provided on a best-effort basis.
+
+The minimum supported Rust version is specified as `rust-version` in `Cargo.toml`, and tested
+against in CI, so Cargo's resolver should find a version for you that works.
