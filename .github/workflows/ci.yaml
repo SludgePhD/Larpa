@@ -106,7 +106,7 @@ jobs:
 
   cd:
     name: Autopublish
-    needs: [bench, ci, msrv, docs]
+    needs: [sizebench, ci, msrv, docs]
     runs-on: ubuntu-latest
 
     permissions:
