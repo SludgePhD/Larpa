@@ -3,6 +3,10 @@ name = "sizebench"
 publish = false
 edition.workspace = true
 
+[[test]]
+name = "sizebench"
+harness = false
+
 [dev-dependencies]
 larpa = { path = "../larpa" }
 
