@@ -1,0 +1,10 @@
+[package]
+name = "ci"
+publish = false
+edition.workspace = true
+
+[dev-dependencies]
+larpa = { path = "../larpa" }
+
+[features]
+empty = []

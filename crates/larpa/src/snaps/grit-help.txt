@@ -1,0 +1,14 @@
+<pre><code>$ grit --help
+The gritty content tracker.
+
+<b>grit</b> [--help] [--version] <b>push</b>|<b>pull</b>|<b>status</b>|<b>...</b>
+
+<b>OPTIONS</b>:
+  <b>    --help</b>     Print help information.
+  <b>    --version</b>  Print the program version.
+
+<b>SUBCOMMANDS</b>:
+  <b>push</b>    Push changes.
+  <b>pull</b>    Pull changes.
+  <b>status</b>  Show file status.
+</code></pre>

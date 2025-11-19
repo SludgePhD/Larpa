@@ -1,0 +1,203 @@
+//! Built-in argument value types.
+
+use std::{cmp::Ordering, ffi::OsStr, fmt, str::FromStr};
+
+use crate::{
+    flag::{self, Flag},
+    private::Context,
+    value::ArgValue,
+};
+
+/// Output colorization choice.
+///
+/// This type can be used by applications that want to define a `--color=[always,never,auto]`
+/// option.
+///
+/// The [`Color`] type is *Magic*, since it will also configure Larpa's own output colorization when
+/// printing CLI errors to the terminal.
+///
+/// # Examples
+///
+/// ```
+/// use larpa::{Command, types::Color};
+///
+/// #[derive(Debug, PartialEq, Command)]
+/// struct MyCmd {
+///     #[larpa(default, name = "--color")]
+///     color: Color,
+/// }
+///
+/// assert_eq!(MyCmd::from_iter(["my-cmd"]), MyCmd { color: Color::Auto });
+/// assert_eq!(MyCmd::from_iter(["my-cmd", "--color=always"]), MyCmd { color: Color::Always });
+/// assert_eq!(MyCmd::from_iter(["my-cmd", "--color", "never"]), MyCmd { color: Color::Never });
+/// ```
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Color {
+    /// Never use colors.
+    Never,
+    /// Automatically detect color capabilities.
+    ///
+    /// This will use colors when writing to a file descriptor that refers to a terminal, and when
+    /// no environment variables disable color.
+    #[default]
+    Auto,
+    /// Always use colors.
+    Always,
+}
+
+impl ArgValue for Color {
+    const CHOICES: &[&str] = &["never", "auto", "always"];
+
+    type Error = InvalidColor;
+
+    fn parse(s: &OsStr, cx: &Context) -> Result<Self, Self::Error> {
+        let color = match s.as_encoded_bytes() {
+            b"never" => Self::Never,
+            b"auto" => Self::Auto,
+            b"always" => Self::Always,
+            _ => return Err(InvalidColor { _p: () }),
+        };
+
+        cx.color.set(color);
+        Ok(color)
+    }
+}
+impl FromStr for Color {
+    type Err = InvalidColor;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "never" => Ok(Self::Never),
+            "auto" => Ok(Self::Auto),
+            "always" => Ok(Self::Always),
+            _ => Err(InvalidColor { _p: () }),
+        }
+    }
+}
+
+/// Error type returned when parsing a [`Color`].
+#[derive(Debug)]
+pub struct InvalidColor {
+    _p: (),
+}
+
+impl fmt::Display for InvalidColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("invalid colorization choice (allowed are 'never', 'auto' and 'always')")
+    }
+}
+impl std::error::Error for InvalidColor {}
+
+/// A [`Flag`] that tracks the requested verbosity.
+///
+/// When adding a `--verbose` flag to a command, this type can be used as its field type to
+/// communicate the desired verbosity to Larpa.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Verbosity(i32);
+
+impl Verbosity {
+    pub const ZERO: Self = Self(0);
+
+    #[inline]
+    pub fn get(self) -> i32 {
+        self.0
+    }
+}
+impl PartialEq<i32> for Verbosity {
+    #[inline]
+    fn eq(&self, other: &i32) -> bool {
+        self.0.eq(other)
+    }
+}
+impl PartialOrd<i32> for Verbosity {
+    #[inline]
+    fn partial_cmp(&self, other: &i32) -> Option<Ordering> {
+        self.0.partial_cmp(other)
+    }
+}
+
+impl flag::Sealed for Verbosity {}
+impl flag::FlagInternal for Verbosity {
+    #[inline]
+    fn set(&mut self, cx: &Context) {
+        self.0 = self.0.saturating_add(1);
+        cx.verbosity.set(*self);
+    }
+}
+impl flag::InvertibleFlag for Verbosity {
+    #[inline]
+    fn unset(&mut self, cx: &Context) {
+        self.0 = self.0.saturating_sub(1);
+        cx.verbosity.set(*self);
+    }
+}
+impl Flag for Verbosity {}
+
+/// Prints the program version when used as a [`Flag`].
+///
+/// This type is meant to be used with [`#[larpa(flag)]`][flag] and can be used to quickly add a
+/// `--version` command to a program.
+///
+/// When the corresponding argument is encountered, Larpa will make the parsing fail with an
+/// [`Error`] that indicates that the user has requested the program version.
+/// When reported to the user, this [`Error`] will then fetch and print the program version.
+/// The [`Command::from_args`] and [`Command::from_iter`] entry points will automatically handle
+/// all of this.
+///
+/// [flag]: crate::attrs::field::flag
+/// [`Error`]: crate::Error
+/// [`Command::from_args`]: crate::Command::from_args
+/// [`Command::from_iter`]: crate::Command::from_iter
+///
+/// # Examples
+///
+/// ```
+/// use larpa::{Command, types::PrintVersion};
+///
+/// #[derive(Debug, PartialEq, Command)]
+/// struct MyCmd {
+///     #[larpa(flag, name = "--version")]
+///     version: PrintVersion,
+/// }
+/// ```
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct PrintVersion;
+
+impl flag::Sealed for PrintVersion {}
+impl flag::FlagInternal for PrintVersion {
+    #[inline]
+    fn set(&mut self, cx: &Context) {
+        cx.version_requested.set(true);
+    }
+}
+impl Flag for PrintVersion {}
+
+/// Prints autogenerated help output when used as a [`Flag`].
+///
+/// This type is meant to be used with [`#[larpa(flag)]`][flag] and can be used to quickly add a
+/// `--help` command to a program.
+///
+/// [flag]: crate::attrs::field::flag
+///
+/// # Examples
+///
+/// ```
+/// use larpa::{Command, types::PrintHelp};
+///
+/// #[derive(Debug, PartialEq, Command)]
+/// struct MyCmd {
+///     #[larpa(flag, name = "--help")]
+///     help: PrintHelp,
+/// }
+/// ```
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct PrintHelp;
+
+impl flag::Sealed for PrintHelp {}
+impl flag::FlagInternal for PrintHelp {
+    #[inline]
+    fn set(&mut self, cx: &Context) {
+        cx.help_requested.set(true);
+    }
+}
+impl Flag for PrintHelp {}

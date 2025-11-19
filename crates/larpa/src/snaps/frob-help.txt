@@ -1,0 +1,17 @@
+<pre><code>$ frobnicator --help
+Data frobnication tool.
+
+<b>frobnicator</b> [-vq] [--help] [--version] [--verbose] [--quiet] [-n &lt;ITERATIONS&gt;]
+            [--config=&lt;CONFIG&gt;] <b>&lt;OBJECT&gt;</b>
+
+<b>ARGUMENTS</b>:
+  <b>OBJECT</b>  The object to frobnicate (mandatory).
+
+<b>OPTIONS</b>:
+  <b>    --help</b>           Print help information.
+  <b>    --version</b>        Print the program version.
+  <b>-v, --verbose</b>        Output more information.
+  <b>-q, --quiet</b>          Output less information.
+  <b>-n</b> ITERATIONS        How many times to frobnicate the data (at least 1). <span style="color:gray">[default: 5]</span>
+  <b>    --config</b>=CONFIG  Path to the configuration file.
+</code></pre>
