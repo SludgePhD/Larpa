@@ -7,6 +7,7 @@ edition = "2024"
 license = "0BSD"
 repository = "https://github.com/SludgePhD/Larpa"
 documentation = "https://docs.rs/larpa"
+rust-version = "1.91" # (keep in sync with ci.yaml)
 version = "0.1.0"
 
 [workspace.dependencies]
