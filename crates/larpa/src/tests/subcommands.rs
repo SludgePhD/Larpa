@@ -433,3 +433,24 @@ fn nested() {
         "#]],
     );
 }
+
+#[test]
+fn generates_top_level_help() {
+    #[derive(Command)]
+    #[larpa(crate = "crate")]
+    enum Git {
+        Status,
+        Push,
+        Pull,
+    }
+
+    // FIXME(#17): this should have a working `--help` command
+    check_err::<Git>(
+        ["git", "--help"],
+        expect![[r#"
+            <red>error</red>: a subcommand is required
+
+            <b>usage</b>: <b>git</b> <u><b>status</b></u>|<u><b>push</b></u>|<u><b>pull</b></u>
+        "#]],
+    );
+}
