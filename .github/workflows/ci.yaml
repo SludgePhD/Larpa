@@ -53,20 +53,6 @@ jobs:
       env:
         RUSTDOCFLAGS: --cfg=docsrs -Dwarnings
 
-  sizebench:
-    name: Benchmark size overhead
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v5
-
-    - name: Install Rust toolchain
-      run: rustup install stable --profile=minimal
-
-    - name: Run sizebench
-      run: cargo run -p sizebench
-
   ci:
     name: CI
     strategy:
@@ -106,7 +92,7 @@ jobs:
 
   cd:
     name: Autopublish
-    needs: [sizebench, ci, msrv, docs]
+    needs: [ci, msrv, docs]
     runs-on: ubuntu-latest
 
     permissions:

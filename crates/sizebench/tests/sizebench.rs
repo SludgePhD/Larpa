@@ -6,7 +6,7 @@
 #![cfg(test)]
 
 use std::{
-    env,
+    env::{self, consts::EXE_SUFFIX},
     error::Error,
     ffi::OsStr,
     fs::File,
@@ -39,8 +39,10 @@ fn size(example: &str, features: &str) -> Result<u64> {
         features,
     ]);
 
-    let mut f = File::open(format!("../../target/release/examples/{example}"))
-        .map_err(|e| format!("{e} (pwd: {})", env::current_dir().unwrap().display()))?;
+    let mut f = File::open(format!(
+        "../../target/release/examples/{example}{EXE_SUFFIX}"
+    ))
+    .map_err(|e| format!("{e} (pwd: {})", env::current_dir().unwrap().display()))?;
     f.seek(SeekFrom::End(0))?;
     Ok(f.stream_position()?)
 }
