@@ -2,19 +2,18 @@
 members = ["crates/*"]
 resolver = "3"
 
-[workspace.package]
-edition = "2024"
-license = "0BSD"
-repository = "https://github.com/SludgePhD/Larpa"
-documentation = "https://docs.rs/larpa"
-rust-version = "1.91" # (keep in sync with ci.yaml)
-version = "0.1.0"
+package.edition = "2024"
+package.license = "0BSD"
+package.repository = "https://github.com/SludgePhD/Larpa"
+package.documentation = "https://docs.rs/larpa"
+package.rust-version = "1.91" # (keep in sync with ci.yaml)
 
-[workspace.dependencies]
-larpa-derive = { path = "crates/larpa-derive", version = "=0.1.0" }
+# keep these versions in sync
+package.version = "0.1.0"
+dependencies.larpa-derive = { path = "crates/larpa-derive", version = "=0.1.0" }
 
-cov-mark = "2.1.0"
-expect-test = "1.5.1"
+dependencies.cov-mark = "2.1.0"
+dependencies.expect-test = "1.5.1"
 
 # For size profiling.
 [profile.release]
