@@ -181,7 +181,7 @@ macro_rules! hit {
     };
 }
 
-#[doc = include_str!("../../../README.md")]
+#[doc = include_str!("../README.md")]
 mod readme {}
 
 #[doc(hidden)]
