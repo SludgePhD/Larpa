@@ -51,23 +51,22 @@ fn fmterr(e: Error, args: Vec<OsString>, path: &str) -> io::Result<()> {
     file.write_all(error.as_bytes())?;
     writeln!(file, "</code></pre>")?;
 
-    let changed = match fs::read(path) {
-        Ok(old) => old != file,
-        Err(_) => true,
-    };
-    match fs::write(path, file) {
-        Ok(()) => {
-            if changed {
+    let prev = fs::read_to_string(path)
+        .unwrap_or(String::new())
+        .replace("\r\n", "\n");
+    if prev.as_bytes() != file {
+        match fs::write(path, file) {
+            Ok(()) => {
                 panic!("contents of '{path}' have changed; run tests again to pass");
-            } else {
-                Ok(())
+            }
+            Err(e) => {
+                panic!(
+                    "failed to create '{path}': {e} (pwd: {})",
+                    env::current_dir().unwrap().display()
+                );
             }
         }
-        Err(e) => {
-            panic!(
-                "failed to create '{path}': {e} (pwd: {})",
-                env::current_dir().unwrap().display()
-            );
-        }
     }
+
+    Ok(())
 }
