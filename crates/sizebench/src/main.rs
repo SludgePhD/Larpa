@@ -11,6 +11,9 @@ use std::{
     process::Command,
 };
 
+/// The list of examples we're measuring.
+const EXAMPLES: &[&str] = &["rosetta", "grit"];
+
 fn cargo(args: &[impl AsRef<OsStr>]) {
     let status = Command::new(env::var_os("CARGO").expect("`$CARGO` is not set"))
         .args(args)
@@ -46,8 +49,6 @@ fn measure(example: &str) -> io::Result<u64> {
 
     Ok(overhead)
 }
-
-const EXAMPLES: &[&str] = &["rosetta"];
 
 fn main() -> io::Result<()> {
     let mut summary = None;

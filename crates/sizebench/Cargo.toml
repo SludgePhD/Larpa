@@ -1,5 +1,5 @@
 [package]
-name = "ci"
+name = "sizebench"
 publish = false
 edition.workspace = true
 
