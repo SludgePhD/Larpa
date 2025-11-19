@@ -8,7 +8,7 @@ use larpa::{
 #[allow(dead_code)]
 #[derive(Debug, Command)]
 struct Args {
-    #[larpa(name = "--help", flag)]
+    #[larpa(name = ["-h", "--help"], flag)]
     help: PrintHelp,
 
     #[larpa(name = "-s")]
@@ -62,9 +62,6 @@ enum Subcmd {
     Path {
         /// The path.
         path: PathBuf,
-
-        #[larpa(name = "--help", flag)]
-        help: PrintHelp,
     },
     #[larpa(name = "renamed")]
     Command,

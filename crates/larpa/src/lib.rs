@@ -15,7 +15,7 @@
 //!
 //! - Automatic generation of styled usage strings, `--help` and `--version` output.
 //! - Introspectable command description ([`CommandDesc`]).
-//! - Decent IDE support.
+//! - Decent IDE support (completion and hover docs for attributes).
 //! - About ~100 KB of binary size overhead (compared to ~500 KB for [clap] and ~30 KB for [argh]).
 //!
 //! # Usage
@@ -54,14 +54,6 @@
 //! #[larpa(name = "frobnicator", version = "1.2.3")]
 //! # #[larpa(no_license, no_repository, no_homepage)]
 //! struct Args {
-//!     /// Print help information.
-//!     #[larpa(flag, name = "--help")]
-//!     help: PrintHelp,
-//!
-//!     /// Print the program version.
-//!     #[larpa(flag, name = "--version")]
-//!     version: PrintVersion,
-//!
 //!     /// Output more information.
 //!     #[larpa(flag, name = ["-v", "--verbose"])]
 //!     verbosity: Verbosity,
@@ -112,45 +104,67 @@
 //!
 //! ```
 //! use larpa::Command;
-//! use larpa::types::{PrintHelp, PrintVersion};
+//! use larpa::types::PrintVersion;
 //! use std::ffi::OsString;
+//! use std::path::PathBuf;
 //!
 //! #[derive(Command)]
 //! enum Subcommand {
+//!     // Variants can have fields that work just like they do in a `struct`.
+//!
 //!     /// Push changes.
 //!     Push {
 //!         /// Force-overwrite the remote ref.
-//!         #[larpa(name = ["-f", "--force"])]
+//!         #[larpa(flag, name = ["-f", "--force"])]
 //!         force: bool,
 //!     },
+//!
+//!     // Alternatively, a tuple variant will use the inner type's `Command` implementation.
+//!
 //!     /// Pull changes.
-//!     Pull,
+//!     Pull(PullArgs),
+//!
+//!     // A variant without data is just a plain subcommand.
+//!
 //!     /// Show file status.
 //!     Status,
+//!
+//!     // A catch-all variant can be created with `#[larpa(fallback)]`, to catch any subcommands
+//!     // that don't match any of the other variants.
 //!
 //!     #[larpa(fallback)]
 //!     Other(Vec<OsString>),
 //! }
 //!
+//! #[derive(Command)]
+//! struct PullArgs {
+//!     #[larpa(flag, name = "--autostash")]
+//!     autostash: bool,
+//! }
+//!
 //! /// The gritty content tracker.
 //! #[derive(Command)]
-//! #[larpa(name = "grit")]
+//! #[larpa(name = "grit", version = "1.0.0")]
 //! # #[larpa(no_license, no_repository, no_homepage)]
 //! struct Grit {
-//!     /// Print help information.
-//!     #[larpa(flag, name = "--help")]
-//!     help: PrintHelp,
+//!     /// Path to the configuration file.
+//!     #[larpa(name = ["-c", "--config"])]
+//!     config: Option<PathBuf>,
 //!
-//!     /// Print the program version.
-//!     #[larpa(flag, name = "--version")]
+//!     /// Print version information.
+//!     #[larpa(name = "--version", flag)]
 //!     version: PrintVersion,
 //!
 //!     #[larpa(subcommand)]
 //!     subcommand: Subcommand,
 //! }
 //! # larpa::private::snap::<Grit>(["grit", "--help"], "src/snaps/grit-help.txt");
+//! # larpa::private::snap::<Grit>(["grit", "push", "--help"], "src/snaps/grit-push-help.txt");
+//! # larpa::private::snap::<Grit>(["grit", "pull", "--help"], "src/snaps/grit-pull-help.txt");
 //! ```
 #![doc = include_str!("snaps/grit-help.txt")]
+#![doc = include_str!("snaps/grit-push-help.txt")]
+#![doc = include_str!("snaps/grit-pull-help.txt")]
 //!
 //! [subcommand]: crate::attrs::field::subcommand
 //! [clap]: https://github.com/clap-rs/clap

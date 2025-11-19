@@ -1,0 +1,9 @@
+<pre><code>$ grit pull --help
+Pull changes.
+
+<b>grit pull</b> [--autostash] [--help]
+
+<b>OPTIONS</b>:
+  <b>    --autostash</b>
+  <b>    --help</b>       Print help information.
+</code></pre>

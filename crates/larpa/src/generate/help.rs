@@ -303,7 +303,10 @@ mod tests {
             expect![[r#"
                 Before. After.
 
-                <b>empty</b>
+                <b>empty</b> [--help]
+
+                <b>OPTIONS</b>:
+                  <b>    --help</b>  Print help information.
             "#]],
         );
     }
@@ -324,7 +327,10 @@ mod tests {
         check::<Empty>(
             true,
             expect![[r#"
-                <b>empty</b>
+                <b>empty</b> [--help]
+
+                <b>OPTIONS</b>:
+                  <b>    --help</b>  Print help information.
 
                 <b>Homepage</b>: home page
                 <b>Repository</b>: repo
@@ -369,13 +375,14 @@ mod tests {
             expect![[r#"
                 Lousy ARgument PArser
 
-                <b>mycmd</b> [--def=<DEF>] <b>--long=<LONG></b> <b>-s <SHORT></b> <b>-m/--mixed <MIXED></b> <b><POS></b> <b>list</b>|<b>help</b>
+                <b>mycmd</b> [--help] [--def=<DEF>] <b>--long=<LONG></b> <b>-s <SHORT></b> <b>-m/--mixed <MIXED></b> <b><POS></b> <b>list</b>|<b>help</b>
 
                 <b>OPTIONS</b>:
                   <b>    --long</b>=LONG
                   <b>-s</b> SHORT
                   <b>-m, --mixed</b>=MIXED
                   <b>    --def</b>=DEF      <faint>[default: 123]</faint>
+                  <b>    --help</b>         Print help information.
 
                 <b>SUBCOMMANDS</b>:
                   <b>list</b>
@@ -456,8 +463,8 @@ mod tests {
             expect![[r#"
                 Lousy ARgument PArser
 
-                mycmd [--defaulted2=<DFL2>] [--defaulted=<DFL>] --long=<LONG> -s <SHORT> -m/--mixed <MIXED> <POS>
-                      <POSITIONAL2> <POSITIONAL3> [list|documented|undocumented]
+                mycmd [--help] [--defaulted2=<DFL2>] [--defaulted=<DFL>] --long=<LONG> -s <SHORT> -m/--mixed <MIXED>
+                      <POS> <POSITIONAL2> <POSITIONAL3> [list|documented|undocumented]
 
                 ARGUMENTS:
                   POS          Documented positional with a long text that requires wrapping after the line runs on
@@ -478,6 +485,7 @@ mod tests {
                                          - First item
                                          - Second item
                       --defaulted=DFL    [default: 123]
+                      --help             Print help information.
 
                 SUBCOMMANDS:
                   list          List things.

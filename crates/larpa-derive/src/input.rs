@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 
+use proc_macro2::Span;
+use quote::quote;
 use syn::spanned::Spanned;
 
 use crate::{
@@ -49,6 +51,7 @@ impl Input {
         let mut homepage = None;
         let mut repository = None;
         let mut test = true;
+        let mut auto_help = true;
 
         for attr in cx.parse_attrs(&input.attrs, Target::TopLevel)? {
             match attr.kind {
@@ -63,6 +66,9 @@ impl Input {
                 }
                 AttrKind::VersionFormatter(fmt) => {
                     version_fmt = Some(fmt);
+                }
+                AttrKind::NoGenerateHelp => {
+                    auto_help = false;
                 }
                 AttrKind::NoGenerateTests => {
                     test = false;
@@ -133,7 +139,7 @@ impl Input {
         let krate = krate.unwrap_or_else(default_crate_path);
 
         let mut fallback_variant = None;
-        let variants = match &input.data {
+        let mut variants = match &input.data {
             syn::Data::Struct(data_struct) => {
                 vec![Variant::for_struct(cx, data_struct, input.ident.clone())?]
             }
@@ -171,6 +177,27 @@ impl Input {
             }
         };
 
+        for variant in &mut variants {
+            if auto_help
+                && variant
+                    .args
+                    .all_args
+                    .iter()
+                    .all(|arg| arg.long() != Some("help"))
+            {
+                variant.args.synth_args.push(Arg {
+                    description: Some("Print help information.".into()),
+                    ..Arg::synth(
+                        "help",
+                        syn::parse2(quote! {
+                            #krate::types::PrintHelp
+                        })
+                        .unwrap(),
+                    )
+                });
+            }
+        }
+
         let meta = Metadata::get();
         let license = license.unwrap_or(meta.pkg_license);
         let homepage = homepage.unwrap_or(meta.pkg_homepage);
@@ -197,7 +224,7 @@ pub struct Variant {
     pub ident: syn::Ident,
     pub subcommand_name: String,
     pub description: Option<String>,
-    pub args: Fields,
+    pub args: Args,
     pub kind: VariantKind,
 }
 
@@ -221,7 +248,7 @@ pub enum DiscoveryFn {
 }
 
 impl Variant {
-    pub fn for_struct(
+    fn for_struct(
         cx: &mut Context,
         strukt: &syn::DataStruct,
         ident: syn::Ident,
@@ -230,12 +257,12 @@ impl Variant {
             subcommand_name: variant_name_to_subcommand_name(&ident.to_string()),
             ident,
             description: None,
-            args: Fields::parse(cx, &strukt.fields)?,
+            args: Args::parse(cx, &strukt.fields)?,
             kind: VariantKind::Command,
         })
     }
 
-    pub fn for_enum(cx: &mut Context, variant: &syn::Variant) -> syn::Result<Self> {
+    fn for_enum(cx: &mut Context, variant: &syn::Variant) -> syn::Result<Self> {
         let mut is_fallback = false;
         let mut subcommand_name = None;
         let mut discover_span = None;
@@ -285,7 +312,7 @@ impl Variant {
             let kind = VariantKind::Fallback {
                 discovery: discover_path,
             };
-            (kind, Fields::default())
+            (kind, Args::default())
         } else {
             match &variant.fields {
                 syn::Fields::Unnamed(flds) => {
@@ -296,12 +323,10 @@ impl Variant {
                     }
 
                     let kind = VariantKind::Wrapped(flds.unnamed.first().unwrap().ty.clone());
-                    (kind, Fields::default())
+                    (kind, Args::default())
                 }
-                syn::Fields::Named(_) => {
-                    (VariantKind::Command, Fields::parse(cx, &variant.fields)?)
-                }
-                syn::Fields::Unit => (VariantKind::Command, Fields::default()),
+                syn::Fields::Named(_) => (VariantKind::Command, Args::parse(cx, &variant.fields)?),
+                syn::Fields::Unit => (VariantKind::Command, Args::default()),
             }
         };
 
@@ -333,8 +358,10 @@ fn variant_name_to_subcommand_name(name: &str) -> String {
 }
 
 #[derive(Default)]
-pub struct Fields {
+pub struct Args {
     pub all_args: Vec<Arg>,
+    /// Synthetic arguments that do not correspond to a field in the struct/variant.
+    pub synth_args: Vec<Arg>,
     pub subcommand: Option<SubcommandField>,
 }
 
@@ -354,7 +381,6 @@ enum Field {
 pub struct Arg {
     pub description: Option<String>,
     pub field_name: syn::Ident,
-    pub field_index: usize,
     pub value_name: String,
     pub inner_type: syn::Type,
     pub wrapper_type: Option<WrapperType>,
@@ -366,6 +392,25 @@ pub struct Arg {
 }
 
 impl Arg {
+    fn synth(long: &str, ty: syn::Type) -> Self {
+        Self {
+            description: None,
+            field_name: syn::Ident::new(&format!("__{long}"), Span::call_site()),
+            value_name: String::new(),
+            inner_type: ty,
+            wrapper_type: None,
+            default: None,
+            inverse_of: None,
+            kind: ArgKind::Named {
+                short: None,
+                long: Some(long.into()),
+                is_flag: true,
+            },
+            required: false,
+            repeating: false,
+        }
+    }
+
     pub fn is_flag(&self) -> bool {
         match &self.kind {
             ArgKind::Positional => false,
@@ -424,13 +469,13 @@ pub enum DefaultValue {
     String(String),
 }
 
-impl Fields {
-    pub(crate) fn parse(cx: &mut Context, fields: &syn::Fields) -> syn::Result<Self> {
+impl Args {
+    fn parse(cx: &mut Context, fields: &syn::Fields) -> syn::Result<Self> {
         let named = match fields {
             syn::Fields::Unnamed(_) => {
                 return Err(syn::Error::new(
                     fields.span(),
-                    "tuple structs/variants are not yet supported by `larpa`; use a struct/variant with named fields instead",
+                    "tuple structs/variants are not supported by `larpa`; use a struct/variant with named fields instead",
                 ));
             }
             syn::Fields::Unit => return Ok(Self::default()),
@@ -446,7 +491,7 @@ impl Fields {
 
         for field in &named.named {
             let parsed_field = Field::parse(cx, field)?;
-            let mut arg = match parsed_field {
+            let arg = match parsed_field {
                 Field::Subcommand(subcmd) => {
                     if subcommand.is_some() {
                         return Err(syn::Error::new(
@@ -461,7 +506,6 @@ impl Fields {
                 Field::Arg(arg) => arg,
             };
 
-            arg.field_index = all_args.len();
             all_args.push(arg.clone());
             match &arg.kind {
                 ArgKind::Positional => {
@@ -582,6 +626,7 @@ impl Fields {
 
         Ok(Self {
             all_args,
+            synth_args: Vec::new(),
             subcommand,
         })
     }
@@ -765,7 +810,6 @@ impl Field {
         Ok(Field::Arg(Arg {
             description: doc_comment(&field.attrs)?,
             field_name: field_name.clone(),
-            field_index: 0,
             value_name: field_name_to_value_name(field_name),
             inner_type,
             wrapper_type: wrapper,
@@ -835,7 +879,7 @@ mod tests {
 
     use super::*;
 
-    fn parse_fields(tokens: proc_macro2::TokenStream) -> syn::Result<Fields> {
+    fn parse_fields(tokens: proc_macro2::TokenStream) -> syn::Result<Args> {
         let strukt = quote! {
             struct S {
                 #tokens
@@ -846,7 +890,7 @@ mod tests {
             syn::Data::Struct(strukt) => strukt.fields,
             _ => unreachable!(),
         };
-        Fields::parse(&mut Context::default(), &field)
+        Args::parse(&mut Context::default(), &field)
     }
 
     #[track_caller]
@@ -857,7 +901,7 @@ mod tests {
         expect.assert_eq(&error.to_string());
     }
 
-    fn assert_ok(tokens: proc_macro2::TokenStream) -> Fields {
+    fn assert_ok(tokens: proc_macro2::TokenStream) -> Args {
         parse_fields(tokens).unwrap()
     }
 

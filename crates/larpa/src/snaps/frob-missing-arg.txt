@@ -1,6 +1,6 @@
 <pre><code>$ frobnicator
 <span style="color:red">error</span>: missing argument `<span style="color:yellow"><i>OBJECT</i></span>`
 
-<b>usage</b>: <b>frobnicator</b> [-vq] [--help] [--version] [--verbose] [--quiet] [-n &lt;ITERATIONS&gt;]
+<b>usage</b>: <b>frobnicator</b> [-vq] [--verbose] [--quiet] [--help] [-n &lt;ITERATIONS&gt;]
                    [--config=&lt;CONFIG&gt;] <u><b>&lt;OBJECT&gt;</b></u>
 </code></pre>

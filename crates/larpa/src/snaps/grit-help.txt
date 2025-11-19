@@ -1,11 +1,12 @@
 <pre><code>$ grit --help
 The gritty content tracker.
 
-<b>grit</b> [--help] [--version] <b>push</b>|<b>pull</b>|<b>status</b>|<b>...</b>
+<b>grit</b> [--version] [--help] [-c/--config &lt;CONFIG&gt;] <b>push</b>|<b>pull</b>|<b>status</b>|<b>...</b>
 
 <b>OPTIONS</b>:
-  <b>    --help</b>     Print help information.
-  <b>    --version</b>  Print the program version.
+  <b>-c, --config</b>=CONFIG  Path to the configuration file.
+  <b>    --version</b>        Print version information.
+  <b>    --help</b>           Print help information.
 
 <b>SUBCOMMANDS</b>:
   <b>push</b>    Push changes.

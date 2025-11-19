@@ -20,7 +20,7 @@ fn empty() {
         expect![[r#"
             <red>error</red>: unexpected argument ``
 
-            <b>usage</b>: <b>my-cmd</b>
+            <b>usage</b>: <b>my-cmd</b> [--help]
         "#]],
     );
 }
@@ -116,8 +116,9 @@ fn version_flag() {
 fn help_flag() {
     /// Test command.
     #[derive(Debug, PartialEq, Command)]
-    #[larpa(crate = "crate", name = "mycmd", version = "1.2.3")]
+    #[larpa(crate = "crate", name = "mycmd", version = "1.2.3", no_generate_help)]
     struct MyCmd {
+        /// Print help information.
         #[larpa(name = "--HELP", flag)]
         help: PrintHelp,
 
@@ -141,7 +142,7 @@ fn help_flag() {
         my-cmd [--HELP] <MANDATORY>
 
         OPTIONS:
-              --HELP
+              --HELP  Print help information.
 
         Repository: https://github.com/SludgePhD/Larpa
         License: 0BSD
@@ -275,7 +276,7 @@ fn optional_arg() {
         expect![[r#"
             <red>error</red>: duplicate argument `<yellow><i>-i</i></yellow>`
 
-            <b>usage</b>: <b>my-cmd</b> [<u>-i <INT></u>]
+            <b>usage</b>: <b>my-cmd</b> [--help] [<u>-i <INT></u>]
         "#]],
     );
 }
@@ -330,7 +331,7 @@ fn required_repeated() {
         expect![[r#"
             <red>error</red>: missing argument `<yellow><i>INT</i></yellow>`
 
-            <b>usage</b>: <b>my-cmd</b> <u><b><INT>...</b></u>
+            <b>usage</b>: <b>my-cmd</b> [--help] <u><b><INT>...</b></u>
         "#]],
     );
 
@@ -407,7 +408,7 @@ fn invalid_value() {
         expect![[r#"
             <red>error</red>: invalid value for argument `<yellow><i>INT</i></yellow>`: invalid digit found in string
 
-            <b>usage</b>: <b>my-cmd</b> <u><b><INT></b></u>
+            <b>usage</b>: <b>my-cmd</b> [--help] <u><b><INT></b></u>
         "#]],
     );
 
@@ -423,7 +424,7 @@ fn invalid_value() {
         expect![[r#"
             <red>error</red>: invalid value for argument `<yellow><i>-i/--int</i></yellow>`: invalid digit found in string
 
-            <b>usage</b>: <b>named</b> <b><u>-i/--int <INT></b></u>
+            <b>usage</b>: <b>named</b> [--help] <b><u>-i/--int <INT></b></u>
         "#]],
     );
     check_err::<Named>(
@@ -431,7 +432,7 @@ fn invalid_value() {
         expect![[r#"
             <red>error</red>: argument `<yellow><i>-i/--int</i></yellow>` requires a value
 
-            <b>usage</b>: <b>named</b> <b><u>-i/--int <INT></b></u>
+            <b>usage</b>: <b>named</b> [--help] <b><u>-i/--int <INT></b></u>
         "#]],
     );
 }
@@ -450,7 +451,7 @@ fn does_not_take_value() {
         expect![[r#"
             <red>error</red>: flag `<yellow><i>--verbose</i></yellow>` does not take a value
 
-            <b>usage</b>: <b>flag</b> [<u>--verbose</u>]
+            <b>usage</b>: <b>flag</b> [<u>--verbose</u>] [--help]
         "#]],
     );
 }
@@ -467,17 +468,17 @@ fn color() {
     check_err::<MyCmd>(
         ["my-cmd", "--color=always", "--wrong"],
         expect![[r#"
-        <red>error</red>: unexpected argument `--wrong`
+            <red>error</red>: unexpected argument `--wrong`
 
-        <b>usage</b>: <b>my-cmd</b> [--color=<COLOR>]
-    "#]],
+            <b>usage</b>: <b>my-cmd</b> [--help] [--color=<COLOR>]
+        "#]],
     );
     check_err::<MyCmd>(
         ["my-cmd", "--color=never", "--wrong"],
         expect![[r#"
             error: unexpected argument `--wrong`
 
-            usage: my-cmd [--color=<COLOR>]
+            usage: my-cmd [--help] [--color=<COLOR>]
         "#]],
     );
 }

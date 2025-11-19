@@ -1,3 +1,6 @@
 <pre><code>$ frobnicator --version
-frobnicator 1.2.3
+<span style="color:red">error</span>: unexpected argument `--version`
+
+<b>usage</b>: <b>frobnicator</b> [-vq] [--verbose] [--quiet] [--help] [-n &lt;ITERATIONS&gt;]
+                   [--config=&lt;CONFIG&gt;] <b>&lt;OBJECT&gt;</b>
 </code></pre>

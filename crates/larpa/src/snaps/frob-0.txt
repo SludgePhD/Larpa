@@ -1,6 +1,6 @@
 <pre><code>$ frobnicator -n 0
 <span style="color:red">error</span>: invalid value for argument `<span style="color:yellow"><i>-n</i></span>`: number would be zero for non-zero type
 
-<b>usage</b>: <b>frobnicator</b> [-vq] [--help] [--version] [--verbose] [--quiet] [<u>-n &lt;ITERATIONS&gt;</u>]
+<b>usage</b>: <b>frobnicator</b> [-vq] [--verbose] [--quiet] [--help] [<u>-n &lt;ITERATIONS&gt;</u>]
                    [--config=&lt;CONFIG&gt;] <b>&lt;OBJECT&gt;</b>
 </code></pre>

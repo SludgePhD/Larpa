@@ -21,6 +21,9 @@ pub(super) enum AttrKind {
     /// `#[larpa(version_formatter = "custom_fmt")]`
     VersionFormatter(syn::Path),
 
+    /// `#[larpa(no_generate_help)]`
+    NoGenerateHelp,
+
     /// `#[larpa(no_generate_tests)]`
     NoGenerateTests,
 
@@ -118,6 +121,7 @@ impl Context {
                 let path: syn::Path = string.parse()?;
                 AttrKind::VersionFormatter(path)
             }
+            "no_generate_help" => AttrKind::NoGenerateHelp,
             "no_generate_tests" => AttrKind::NoGenerateTests,
             "license" => {
                 input.parse::<Token![=]>().map_err(|_| {

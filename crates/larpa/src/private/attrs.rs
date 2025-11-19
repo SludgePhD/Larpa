@@ -27,6 +27,19 @@ pub mod top_level {
     pub const сrate: () = ();
     // (yes, that's a confusable and not the letter "c")
 
+    /// **`#[larpa(no_generate_help)]`** disables the generation of a `--help` flag.
+    ///
+    /// By default, Larpa will generate a `--help` flag that will output generated usage
+    /// information for the command.
+    /// This attribute can be used to suppress this behavior.
+    ///
+    /// The `--help` flag can also be manually defined, which will take precedence over the
+    /// generated flag.
+    ///
+    /// [`PrintHelp`][crate::types::PrintHelp] can be used to create custom flags (with custom
+    /// names and documentation) that will display the generated help output when used.
+    pub const no_generate_help: () = ();
+
     /// **`#[larpa(no_generate_tests)]`** disables automatic unit test generation.
     ///
     /// Certain features cause the derive macro to output not just an implementation of [`Command`],
@@ -95,7 +108,7 @@ pub mod top_level {
     /// ```
     ///
     /// If this attribute is omitted, the default formatter is used, which will simply output the
-    /// command name and version string.
+    /// command name and version string from the command metadata.
     ///
     /// # Example
     ///
@@ -172,7 +185,7 @@ pub mod top_level {
     /// instead.
     pub const no_homepage: () = ();
 
-    /// **`#[larpa(repository = "https://example.com")]`** sets a custom repository string.
+    /// **`#[larpa(repository = "https://example.com")]`** sets a custom repository.
     ///
     /// By default (if this attribute is omitted), the repository specified in the Cargo.toml is used.
     /// To clear the repository information, even if Cargo.toml does specify a repository, use
@@ -470,6 +483,9 @@ pub mod field {
     ///
     /// #[derive(Debug, PartialEq, Command)]
     /// struct MyCmd {
+    ///     #[larpa(flag, name = ["-f", "--flag"])]
+    ///     flag: u8,
+    ///
     ///     #[larpa(subcommand)]
     ///     subcommand: Subcommand,
     /// }
@@ -482,8 +498,18 @@ pub mod field {
     /// }
     ///
     /// assert!(MyCmd::try_from_iter(["my-cmd"]).is_err()); // Subcommand is required.
-    /// assert_eq!(MyCmd::from_iter(["my-cmd", "print"]), MyCmd { subcommand: Subcommand::Print });
-    /// assert_eq!(MyCmd::from_iter(["my-cmd", "dec"]), MyCmd { subcommand: Subcommand::Dec });
+    /// assert_eq!(
+    ///     MyCmd::from_iter(["my-cmd", "print"]),
+    ///     MyCmd { flag: 0, subcommand: Subcommand::Print },
+    /// );
+    /// assert_eq!(
+    ///     MyCmd::from_iter(["my-cmd", "dec"]),
+    ///     MyCmd { flag: 0, subcommand: Subcommand::Dec },
+    /// );
+    /// assert_eq!(
+    ///     MyCmd::from_iter(["my-cmd", "-f", "print"]),
+    ///     MyCmd { flag: 1, subcommand: Subcommand::Print },
+    /// );
     /// ```
     pub const subcommand: () = ();
 

@@ -84,7 +84,7 @@ fn subcommand_args() {
         expect![[r#"
             <red>error</red>: unexpected argument `-s`
 
-            <b>usage</b>: <b>my-cmd sub1</b> [-f]
+            <b>usage</b>: <b>my-cmd sub1</b> [-f] [--help]
         "#]],
     );
 
@@ -105,7 +105,7 @@ fn subcommand_args() {
         expect![[r#"
             <red>error</red>: unexpected argument `-f`
 
-            <b>usage</b>: <b>my-cmd sub2</b> [-s]
+            <b>usage</b>: <b>my-cmd sub2</b> [-s] [--help]
         "#]],
     );
     check_err::<MyCmd>(
@@ -113,7 +113,7 @@ fn subcommand_args() {
         expect![[r#"
             <red>error</red>: unexpected argument `bla`
 
-            <b>usage</b>: <b>my-cmd sub2</b> [-s]
+            <b>usage</b>: <b>my-cmd sub2</b> [-s] [--help]
         "#]],
     );
 }
@@ -241,7 +241,7 @@ fn subcommand_field() {
         expect![[r#"
             <red>error</red>: a subcommand is required
 
-            <b>usage</b>: <b>cmd</b> [-a] <u><b>list</b></u>|<u><b>status</b></u>
+            <b>usage</b>: <b>cmd</b> [-a] [--help] <u><b>list</b></u>|<u><b>status</b></u>
         "#]],
     );
 }
@@ -305,7 +305,7 @@ fn with_required_arg() {
         expect![[r#"
             <red>error</red>: missing argument `<yellow><i>-a</i></yellow>`
 
-            <b>usage</b>: <b>cmd</b> <b><u>-a <ARG></b></u> <b>list</b>|<b>status</b>
+            <b>usage</b>: <b>cmd</b> [--help] <b><u>-a <ARG></b></u> <b>list</b>|<b>status</b>
         "#]],
     );
     check_err::<Cmd>(
@@ -313,7 +313,7 @@ fn with_required_arg() {
         expect![[r#"
             <red>error</red>: missing argument `<yellow><i>-a</i></yellow>`
 
-            <b>usage</b>: <b>cmd</b> <b><u>-a <ARG></b></u> <b>list</b>|<b>status</b>
+            <b>usage</b>: <b>cmd</b> [--help] <b><u>-a <ARG></b></u> <b>list</b>|<b>status</b>
         "#]],
     );
 
@@ -322,7 +322,7 @@ fn with_required_arg() {
         expect![[r#"
             <red>error</red>: argument `<yellow><i>-a</i></yellow>` requires a value
 
-            <b>usage</b>: <b>cmd</b> <b><u>-a <ARG></b></u> <b>list</b>|<b>status</b>
+            <b>usage</b>: <b>cmd</b> [--help] <b><u>-a <ARG></b></u> <b>list</b>|<b>status</b>
         "#]],
     );
 
@@ -331,7 +331,7 @@ fn with_required_arg() {
         expect![[r#"
             <red>error</red>: a subcommand is required
 
-            <b>usage</b>: <b>cmd</b> <b>-a <ARG></b> <u><b>list</b></u>|<u><b>status</b></u>
+            <b>usage</b>: <b>cmd</b> [--help] <b>-a <ARG></b> <u><b>list</b></u>|<u><b>status</b></u>
         "#]],
     );
 }

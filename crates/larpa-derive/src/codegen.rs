@@ -70,7 +70,7 @@ impl<'a> Codegen<'a> {
                 VariantKind::Command => {},
             }
 
-            let field_decls = v.args.all_args.iter().map(|arg| {
+            let field_decls = v.args.all_args.iter().chain(v.args.synth_args.iter()).map(|arg| {
                 let inner_ty = &arg.inner_type;
                 let ty = match arg.wrapper_type {
                     Some(WrapperType::Vec) => quote!( Vec<#inner_ty> ),
@@ -95,17 +95,17 @@ impl<'a> Codegen<'a> {
                 }
             }));
             let mut positional = 0;
-            let mut match_args = v.args.all_args.iter().enumerate().map(|(argidx, arg)| {
+            let mut match_args = v.args.all_args.iter().chain(v.args.synth_args.iter()).enumerate().map(|(argidx, arg)| {
                 let field = &arg.field_name;
                 let ty = &arg.inner_type;
                 let processor = if arg.is_flag() {
-                    // All flags are marked as used, because there are special flag types like
-                    // `PrintHelp` that are never used in user code, and because `inverse_of` fields
-                    // always have type `()` and aren't counted as "used".
-                    alive_fields.push(field.clone());
-
                     match &arg.inverse_of {
                         Some(field) => {
+                            // A field that uses `inverse_of` has type `()` and is normally never
+                            // used by the program after parsing, so we inject a fake use of the
+                            // field to silence the dead code warning.
+                            alive_fields.push(field.clone());
+
                             let target = v.args.all_args.iter().find(|arg| arg.field_name == *field).unwrap();
                             let ty = &target.inner_type;
                             quote!( <#ty as #private::InvertibleFlag>::unset(&mut #field, __cx) )
@@ -504,6 +504,7 @@ impl<'a> Codegen<'a> {
             .args
             .all_args
             .iter()
+            .chain(variant.args.synth_args.iter())
             .map(|arg| self.build_arg_desc(arg))
             .collect::<Vec<_>>();
 

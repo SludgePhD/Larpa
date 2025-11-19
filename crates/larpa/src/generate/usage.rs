@@ -292,7 +292,7 @@ mod tests {
         }
 
         check::<MyCmd>(expect![[r#"
-            <b>usage</b>: <b>larpa</b> [-s <SHORT>] [--long=<LONG>] [-m/--mixed <MIXED>] [OPT_POSITIONAL]
+            <b>usage</b>: <b>larpa</b> [--help] [-s <SHORT>] [--long=<LONG>] [-m/--mixed <MIXED>] [OPT_POSITIONAL]
         "#]]);
     }
 
@@ -315,7 +315,7 @@ mod tests {
         }
 
         check::<MyCmd>(expect![[r#"
-            <b>usage</b>: <b>larpa</b> <b>-s <SHORT></b> <b>--long=<LONG></b> <b>-m/--mixed <MIXED></b> <b><REQUIRED_POSITIONAL></b>
+            <b>usage</b>: <b>larpa</b> [--help] <b>-s <SHORT></b> <b>--long=<LONG></b> <b>-m/--mixed <MIXED></b> <b><REQUIRED_POSITIONAL></b>
         "#]]);
     }
 
@@ -338,7 +338,7 @@ mod tests {
         }
 
         check::<MyCmd>(expect![[r#"
-            <b>usage</b>: <b>larpa</b> [-s <SHORT>]... [--long=<LONG>]... [-m/--mixed <MIXED>]... [POSITIONAL]...
+            <b>usage</b>: <b>larpa</b> [--help] [-s <SHORT>]... [--long=<LONG>]... [-m/--mixed <MIXED>]... [POSITIONAL]...
         "#]]);
     }
 
@@ -359,7 +359,7 @@ mod tests {
         }
 
         check::<MyCmd>(expect![[r#"
-            <b>usage</b>: <b>larpa</b> [-se] [--long] [--either]
+            <b>usage</b>: <b>larpa</b> [-se] [--long] [--either] [--help]
         "#]]);
     }
 
@@ -390,7 +390,7 @@ mod tests {
         }
 
         check::<Outer>(expect![[r#"
-            <b>usage</b>: <b>gitwrap</b> [-f] <b>push</b>|<b>pull</b>|<b>commit</b>
+            <b>usage</b>: <b>gitwrap</b> [-f] [--help] <b>push</b>|<b>pull</b>|<b>commit</b>
         "#]]);
 
         #[derive(Command)]
@@ -405,7 +405,7 @@ mod tests {
         }
 
         check::<Opt>(expect![[r#"
-            <b>usage</b>: <b>opt</b> [-f] [push|pull|commit]
+            <b>usage</b>: <b>opt</b> [-f] [--help] [push|pull|commit]
         "#]]);
     }
 
@@ -446,7 +446,7 @@ mod tests {
         }
 
         check::<Embed>(expect![[r#"
-            <b>usage</b>: <b>embed</b> <b>list</b>|<b>status</b>|<b>...</b>
+            <b>usage</b>: <b>embed</b> [--help] <b>list</b>|<b>status</b>|<b>...</b>
         "#]]);
 
         #[derive(Command)]
@@ -458,7 +458,7 @@ mod tests {
         }
 
         check::<EmbedOpt>(expect![[r#"
-            <b>usage</b>: <b>embed</b> [list|status|...]
+            <b>usage</b>: <b>embed</b> [--help] [list|status|...]
         "#]]);
     }
 }

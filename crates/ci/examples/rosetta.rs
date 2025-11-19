@@ -2,7 +2,7 @@
 
 use std::{num::NonZeroU32, path::PathBuf};
 
-use larpa::{Command, types::PrintHelp};
+use larpa::Command;
 
 #[allow(dead_code)]
 #[derive(Command)]
@@ -21,10 +21,6 @@ struct App {
     width: NonZeroU32,
 
     input: Vec<PathBuf>,
-
-    /// Print help information.
-    #[larpa(name = "--help", flag)]
-    help: PrintHelp,
 }
 
 fn main() {

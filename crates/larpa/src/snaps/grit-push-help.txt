@@ -1,0 +1,9 @@
+<pre><code>$ grit push --help
+Push changes.
+
+<b>grit push</b> [-f] [--force] [--help]
+
+<b>OPTIONS</b>:
+  <b>-f, --force</b>  Force-overwrite the remote ref.
+  <b>    --help</b>   Print help information.
+</code></pre>

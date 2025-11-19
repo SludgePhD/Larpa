@@ -29,22 +29,18 @@ A simple `#[derive]`-based command line argument parsing library.
 
 ```rust
 use larpa::Command;
-use larpa::types::{Verbosity, PrintVersion, PrintHelp};
+use larpa::types::Verbosity;
 use std::path::PathBuf;
 
 #[derive(Command)]
 struct Shredder {
+    /// Output more information.
     #[larpa(name = ["-v", "--verbose"], flag)]
     verbosity: Verbosity,
 
+    /// Output less information.
     #[larpa(name = ["-q", "--quiet"], flag, inverse_of = "verbosity")]
     quiet: (),
-
-    #[larpa(name = "--version", flag)]
-    version: PrintVersion,
-
-    #[larpa(name = "--help", flag)]
-    help: PrintHelp,
 
     /// The configuration file to use.
     #[larpa(name = "--config")]

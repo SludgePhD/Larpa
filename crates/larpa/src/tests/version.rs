@@ -16,7 +16,33 @@ fn custom_version() {
 }
 
 #[test]
+fn print_version() {
+    #[derive(Command)]
+    #[larpa(crate = "crate", name = "mycmd", version = concat!("custom-version", "-1.0"))]
+    struct MyCmd {
+        #[larpa(flag, name = "--version")]
+        _version: PrintVersion,
+    }
+
+    let error = MyCmd::try_from_iter(["mycmd", "--version"]).err().unwrap();
+    expect![[r#"
+        mycmd custom-version-1.0
+    "#]]
+    .assert_eq(&error.to_string());
+
+    check_err::<MyCmd>(
+        ["mycmd", "--invalid"],
+        expect![[r#"
+            <red>error</red>: unexpected argument `--invalid`
+
+            <b>usage</b>: <b>mycmd</b> [--version] [--help]
+        "#]],
+    );
+}
+
+#[test]
 fn custom_formatter() {
+    #[allow(dead_code)]
     #[derive(Debug, Command)]
     #[larpa(crate = "crate", version = "1.2.3", version_formatter = "my_fmt")]
     struct MyCmd {
