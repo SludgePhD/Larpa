@@ -22,32 +22,21 @@ fn cargo(args: &[impl AsRef<OsStr>]) {
     assert!(status.success());
 }
 
-fn size(file: &str) -> io::Result<u64> {
-    let mut f = File::open(file)?;
-    f.seek(SeekFrom::End(0))?;
-    f.stream_position()
-}
-
-fn measure(example: &str) -> io::Result<u64> {
+fn size(example: &str, features: &str) -> io::Result<u64> {
     cargo(&[
         "build",
         "--release",
         "-p",
-        "ci",
+        env!("CARGO_PKG_NAME"),
         "--example",
         example,
-        "--features=empty",
+        "--features",
+        features,
     ]);
 
-    let empty = size(&format!("target/release/examples/{example}"))?;
-
-    cargo(&["build", "--release", "-p", "ci", "--example", example]);
-
-    let nonempty = size(&format!("target/release/examples/{example}"))?;
-
-    let overhead = nonempty - empty;
-
-    Ok(overhead)
+    let mut f = File::open(format!("target/release/examples/{example}"))?;
+    f.seek(SeekFrom::End(0))?;
+    f.stream_position()
 }
 
 fn main() -> io::Result<()> {
@@ -67,11 +56,14 @@ fn main() -> io::Result<()> {
 
     append("# Binary Size Overhead")?;
     append("")?;
-    append("| Name | Overhead |")?;
-    append("|------|----------|")?;
+    append("| Name | `Command::from_args` | `Command::DESC` |")?;
+    append("|------|----------------------|-----------------|")?;
     for example in EXAMPLES {
-        let overhead = measure(example)? / 1024;
-        append(&format!("| {example} | {overhead} KiB |"))?;
+        let empty = size(example, "")?;
+        let from_args = (size(example, "from-args")? - empty) / 1024;
+        let desc = (size(example, "desc")? - empty) / 1024;
+
+        append(&format!("| {example} | {from_args} KiB | {desc} KiB |"))?;
     }
 
     Ok(())

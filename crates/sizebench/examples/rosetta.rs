@@ -24,8 +24,10 @@ struct App {
 }
 
 fn main() {
-    if !cfg!(feature = "empty") {
-        let args = App::from_args();
-        std::hint::black_box(args);
+    if cfg!(feature = "from-args") {
+        std::hint::black_box(App::from_args());
+    }
+    if cfg!(feature = "desc") {
+        std::hint::black_box(App::DESC);
     }
 }
