@@ -22,7 +22,6 @@ jobs:
       run: |
         rustup install ${{ env.MSRV }} --profile=minimal
         rustup default ${{ env.MSRV }}
-        rustup install nightly --profile=minimal
 
     - name: Install CI/CD tooling
       run: cargo install sludge-cicd --debug
@@ -31,6 +30,28 @@ jobs:
       run: sludge-cicd
       env:
         CICD_SKIP_DOCS: 1
+
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: taiki-e/checkout-action@v1
+
+    - name: Install Rust toolchain
+      run: |
+        rustup install nightly --profile=minimal
+        rustup default nightly
+
+    - name: Install CI/CD tooling
+      run: cargo install sludge-cicd --debug
+
+    # We'll pretend to be docs.rs to make sure the `cfg(docsrs)` stuff works.
+    - name: Build documentation
+      run: cargo doc --no-deps
+      env:
+        RUSTDOCFLAGS: --cfg=docsrs -Dwarnings
 
   ci:
     name: CI
@@ -66,11 +87,12 @@ jobs:
 
     - name: Run CI/CD
       run: sludge-cicd --target ${{ matrix.target }}
-      # (no token, this should only run tests)
+      env:
+        CICD_SKIP_DOCS: 1
 
   cd:
     name: Autopublish
-    needs: ci
+    needs: [ci, msrv, docs]
     runs-on: ubuntu-latest
 
     permissions:
@@ -90,3 +112,4 @@ jobs:
       run: sludge-cicd
       env:
         CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        SKIP_DOCS: 1  # tested separately
