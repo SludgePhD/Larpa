@@ -53,6 +53,20 @@ jobs:
       env:
         RUSTDOCFLAGS: --cfg=docsrs -Dwarnings
 
+  bench:
+    name: Benchmark size overhead
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: taiki-e/checkout-action@v1
+
+    - name: Install Rust toolchain
+      run: rustup install stable --profile=minimal
+
+    - name: Run
+      run: cargo run -p ci
+
   ci:
     name: CI
     strategy:
@@ -92,7 +106,7 @@ jobs:
 
   cd:
     name: Autopublish
-    needs: [ci, msrv, docs]
+    needs: [bench, ci, msrv, docs]
     runs-on: ubuntu-latest
 
     permissions:
