@@ -115,4 +115,5 @@ jobs:
       run: sludge-cicd
       env:
         CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CICD_SKIP_DOCS: 1  # tested separately
