@@ -9,8 +9,8 @@ package.documentation = "https://docs.rs/larpa"
 package.rust-version = "1.91" # (keep in sync with ci.yaml)
 
 # keep these versions in sync
-package.version = "0.1.0"
-dependencies.larpa-derive = { path = "crates/larpa-derive", version = "=0.1.0" }
+package.version = "0.1.1"
+dependencies.larpa-derive = { path = "crates/larpa-derive", version = "=0.1.1" }
 
 dependencies.cov-mark = "2.1.0"
 dependencies.expect-test = "1.5.1"
