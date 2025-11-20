@@ -20,4 +20,3 @@ dependencies.expect-test = "1.5.1"
 debug = "line-tables-only"
 panic = "abort"
 strip = "debuginfo"
-lto = true

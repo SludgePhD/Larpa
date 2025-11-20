@@ -17,39 +17,48 @@ use std::{
 /// The list of examples we're measuring.
 const EXAMPLES: &[&str] = &["rosetta", "grit"];
 
+/// If this env var is set, will build in `--release` mode and output the result to
+/// `GITHUB_STEP_SUMMARY`.
+const ENV_VAR: &str = "SIZEBENCH";
+
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-fn cargo(args: &[impl AsRef<OsStr>]) {
-    let status = Command::new(env::var_os("CARGO").expect("`$CARGO` is not set"))
-        .args(args)
-        .status()
-        .unwrap();
+fn cargo_build(release: bool, args: &[impl AsRef<OsStr>]) {
+    let mut command = Command::new(env::var_os("CARGO").expect("`$CARGO` is not set"));
+    command.arg("build").args(args);
+    if release {
+        command.arg("--release");
+    }
+    let status = command.status().unwrap();
     assert!(status.success());
 }
 
 fn size(example: &str, features: &str) -> Result<u64> {
-    cargo(&[
-        "build",
-        "--release",
-        "-p",
-        env!("CARGO_PKG_NAME"),
-        "--example",
-        example,
-        "--features",
-        features,
-    ]);
+    let release = env::var_os(ENV_VAR).is_some();
+    cargo_build(
+        release,
+        &[
+            "-p",
+            env!("CARGO_PKG_NAME"),
+            "--example",
+            example,
+            "--features",
+            features,
+        ],
+    );
 
-    let mut f = File::open(format!(
-        "../../target/release/examples/{example}{EXE_SUFFIX}"
-    ))
-    .map_err(|e| format!("{e} (pwd: {})", env::current_dir().unwrap().display()))?;
+    let dir = if release { "release" } else { "debug" };
+    let mut f = File::open(format!("../../target/{dir}/examples/{example}{EXE_SUFFIX}"))
+        .map_err(|e| format!("{e} (pwd: {})", env::current_dir().unwrap().display()))?;
     f.seek(SeekFrom::End(0))?;
     Ok(f.stream_position()?)
 }
 
 fn main() -> Result<()> {
     let mut summary = None;
-    if let Some(step) = env::var_os("GITHUB_STEP_SUMMARY") {
+    if let Some(step) = env::var_os("GITHUB_STEP_SUMMARY")
+        && env::var_os(ENV_VAR).is_some()
+    {
         summary = Some(File::options().append(true).create(true).open(step)?);
     }
 
@@ -62,7 +71,14 @@ fn main() -> Result<()> {
         Ok(())
     };
 
+    let profile = if env::var_os(ENV_VAR).is_some() {
+        "release"
+    } else {
+        "debug"
+    };
     append("# Binary Size Overhead")?;
+    append("")?;
+    append(&format!("Build profile: **`{profile}`**"))?;
     append("")?;
     append("| Name | `Command::from_args` | `Command::DESC` |")?;
     append("|------|----------------------|-----------------|")?;

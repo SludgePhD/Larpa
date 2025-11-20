@@ -89,6 +89,7 @@ jobs:
       run: sludge-cicd --target ${{ matrix.target }}
       env:
         CICD_SKIP_DOCS: 1
+        SIZEBENCH: 1
 
   cd:
     name: Autopublish
