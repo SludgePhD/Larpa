@@ -54,6 +54,10 @@
 //! #[larpa(name = "frobnicator", version = "1.2.3")]
 //! # #[larpa(no_license, no_repository, no_homepage)]
 //! struct Args {
+//!     /// Print version information.
+//!     #[larpa(flag, name = "--version")]
+//!     version: PrintVersion,
+//!
 //!     /// Output more information.
 //!     #[larpa(flag, name = ["-v", "--verbose"])]
 //!     verbosity: Verbosity,
