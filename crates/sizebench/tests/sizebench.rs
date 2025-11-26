@@ -21,6 +21,8 @@ const EXAMPLES: &[&str] = &["rosetta", "grit"];
 /// `GITHUB_STEP_SUMMARY`.
 const ENV_VAR: &str = "SIZEBENCH";
 
+const TARGET_TRIPLE: &str = include_str!(concat!(env!("OUT_DIR"), "/target.txt"));
+
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 fn cargo_build(release: bool, args: &[impl AsRef<OsStr>]) {
@@ -38,6 +40,8 @@ fn size(example: &str, features: &str) -> Result<u64> {
     cargo_build(
         release,
         &[
+            "--target",
+            TARGET_TRIPLE,
             "-p",
             env!("CARGO_PKG_NAME"),
             "--example",
@@ -47,8 +51,9 @@ fn size(example: &str, features: &str) -> Result<u64> {
         ],
     );
 
-    let dir = if release { "release" } else { "debug" };
-    let mut f = File::open(format!("../../target/{dir}/examples/{example}{EXE_SUFFIX}"))
+    let profile = if release { "release" } else { "debug" };
+    let target_dir = format!("../../target/{TARGET_TRIPLE}/{profile}");
+    let mut f = File::open(format!("{target_dir}/examples/{example}{EXE_SUFFIX}"))
         .map_err(|e| format!("{e} (pwd: {})", env::current_dir().unwrap().display()))?;
     f.seek(SeekFrom::End(0))?;
     Ok(f.stream_position()?)
@@ -79,6 +84,7 @@ fn main() -> Result<()> {
     append("# Binary Size Overhead")?;
     append("")?;
     append(&format!("Build profile: **`{profile}`**"))?;
+    append(&format!("Build target: **`{TARGET_TRIPLE}`**"))?;
     append("")?;
     append("| Name | `Command::from_args` | `Command::DESC` |")?;
     append("|------|----------------------|-----------------|")?;
