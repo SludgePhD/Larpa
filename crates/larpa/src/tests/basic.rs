@@ -482,3 +482,46 @@ fn color() {
         "#]],
     );
 }
+
+#[test]
+fn cfgs() {
+    #[derive(Debug, PartialEq, Command)]
+    #[larpa(crate = "crate")]
+    struct MyCmd {
+        #[larpa(name = "--arg")]
+        #[cfg(false)]
+        arg: u8,
+
+        #[larpa(name = "--arg2", default)]
+        #[cfg(true)]
+        arg: u8,
+
+        #[larpa(subcommand)]
+        subcommand: Subcommand,
+    }
+
+    #[derive(Debug, PartialEq, Command)]
+    #[larpa(crate = "crate")]
+    enum Subcommand {
+        #[cfg(false)]
+        Nope,
+        Yep,
+    }
+
+    assert_eq!(
+        MyCmd::from_iter(["my-cmd", "yep"]),
+        MyCmd {
+            arg: 0,
+            subcommand: Subcommand::Yep
+        }
+    );
+
+    check_err::<MyCmd>(
+        ["my-cmd", "nope"],
+        expect![[r#"
+            <red>error</red>: unknown subcommand `nope`
+
+            <b>usage</b>: <b>my-cmd</b> [--help] [--arg2=<ARG>] <u><b>yep</b></u>
+        "#]],
+    );
+}

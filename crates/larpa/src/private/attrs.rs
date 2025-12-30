@@ -468,7 +468,7 @@ pub mod field {
 
     /// **`#[larpa(subcommand)]`** marks a field as a nested subcommand.
     ///
-    /// The field type has to implement [`Command`], and it has to be an `enum`.
+    /// The field type has to derive [`Command`], and it has to be an `enum`.
     ///
     /// The field can we wrapped in [`Option`] to indicate an optional subcommand.
     ///
