@@ -17,14 +17,16 @@ pub struct Codegen<'a> {
     private: TokenStream2,
     none: TokenStream2,
     some: TokenStream2,
-    unit_tests: TokenStream2,
+    unit_test: TokenStream2,
 }
 
 impl<'a> Codegen<'a> {
     pub fn new(cx: &'a Context, input: &'a Input, meta: &'a Metadata) -> Self {
         let krate = &input.krate;
-        let snake_case =
-            syn::Ident::new(&input.ident.to_string().to_lowercase(), input.ident.span());
+        let snake_case = syn::Ident::new(
+            &input.ident.to_string().to_lowercase().trim_matches('_'),
+            input.ident.span(),
+        );
         Self {
             cx,
             input,
@@ -33,7 +35,7 @@ impl<'a> Codegen<'a> {
             private: quote!(#krate::private),
             none: quote!(::core::option::Option::None),
             some: quote!(::core::option::Option::Some),
-            unit_tests: TokenStream2::new(),
+            unit_test: TokenStream2::new(),
         }
     }
 
@@ -206,12 +208,8 @@ impl<'a> Codegen<'a> {
                                 // `--help` output.
 
                                 // Emit a unit test that ensures the specified string parses into the target type.
-                                let test_name = format_ident!("larpa_{}_{name}_default_parses", self.snake_case);
-                                self.unit_tests.extend(quote! {
-                                    #[test]
-                                    fn #test_name() {
-                                        <#ty as #private::FromStr>::from_str(#s).unwrap();
-                                    }
+                                self.unit_test.extend(quote! {
+                                    <#ty as #private::FromStr>::from_str(#s).unwrap();
                                 });
 
                                 quote! {
@@ -333,10 +331,17 @@ impl<'a> Codegen<'a> {
             });
         });
 
-        let unit_tests = if self.input.emit_tests {
-            &self.unit_tests
+        let unit_tests = if self.input.emit_tests && !self.unit_test.is_empty() {
+            let content = &self.unit_test;
+            let test_name = format_ident!("larpa_{}_tests", self.snake_case);
+            quote! {
+                #[test]
+                fn #test_name() {
+                    #content
+                }
+            }
         } else {
-            &TokenStream2::new()
+            TokenStream2::new()
         };
         Ok(quote! {
             const _: () = {
