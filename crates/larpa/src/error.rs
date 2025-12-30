@@ -140,10 +140,10 @@ impl Error {
     }
 
     fn is_fatal(&self) -> bool {
-        match &self.kind {
-            ErrorKind::HelpRequested | ErrorKind::VersionRequested => false,
-            _ => true,
-        }
+        !matches!(
+            &self.kind,
+            ErrorKind::HelpRequested | ErrorKind::VersionRequested
+        )
     }
 }
 

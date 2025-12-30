@@ -139,10 +139,7 @@ impl ParseState {
 
     /// Returns `true` if the last [`RawArg`] was a long argument with an `=` sign (`--long=`).
     pub fn after_eq(&self) -> bool {
-        match self {
-            ParseState::LongEq { .. } => true,
-            _ => false,
-        }
+        matches!(self, ParseState::LongEq { .. })
     }
 
     pub fn peek_value<'a>(&self, chunks: &'a [OsString]) -> Option<(&'a OsStr, ParseState)> {

@@ -52,7 +52,7 @@ fn fmterr(e: Error, args: Vec<OsString>, path: &str) -> io::Result<()> {
     writeln!(file, "</code></pre>")?;
 
     let prev = fs::read_to_string(path)
-        .unwrap_or(String::new())
+        .unwrap_or_default()
         .replace("\r\n", "\n");
     if prev.as_bytes() != file {
         match fs::write(path, file) {

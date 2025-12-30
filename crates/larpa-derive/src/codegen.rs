@@ -24,7 +24,7 @@ impl<'a> Codegen<'a> {
     pub fn new(cx: &'a Context, input: &'a Input, meta: &'a Metadata) -> Self {
         let krate = &input.krate;
         let snake_case = syn::Ident::new(
-            &input.ident.to_string().to_lowercase().trim_matches('_'),
+            input.ident.to_string().to_lowercase().trim_matches('_'),
             input.ident.span(),
         );
         Self {
@@ -386,7 +386,7 @@ impl<'a> Codegen<'a> {
             .input
             .description
             .as_deref()
-            .or_else(|| self.meta.pkg_description.as_deref())
+            .or(self.meta.pkg_description.as_deref())
         {
             Some(desc) => &self.some(desc),
             None => self.none(),

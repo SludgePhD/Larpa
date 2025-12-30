@@ -36,9 +36,7 @@ impl Metadata {
     /// missing.
     /// In that case, manually specifying an executable name is required.
     pub fn canonical_name(&self) -> Option<&str> {
-        self.bin_name
-            .as_deref()
-            .or_else(|| self.pkg_name.as_deref())
+        self.bin_name.as_deref().or(self.pkg_name.as_deref())
     }
 }
 

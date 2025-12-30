@@ -548,21 +548,21 @@ impl Args {
                     positionals.push(arg);
                 }
                 ArgKind::Named { short, long, .. } => {
-                    if let Some(short) = *short {
-                        if let Some(prev) = short_args.insert(short, arg.clone()) {
-                            let mut error = syn::Error::new(
-                                arg.field_name.span(),
-                                format!(
-                                    "field `{}` uses short flag name '{short}', which is already in use",
-                                    arg.field_name
-                                ),
-                            );
-                            error.combine(syn::Error::new(
-                                prev.field_name.span(),
-                                format!("previous use of short flag '{short}' here"),
-                            ));
-                            return Err(error);
-                        }
+                    if let Some(short) = *short
+                        && let Some(prev) = short_args.insert(short, arg.clone())
+                    {
+                        let mut error = syn::Error::new(
+                            arg.field_name.span(),
+                            format!(
+                                "field `{}` uses short flag name '{short}', which is already in use",
+                                arg.field_name
+                            ),
+                        );
+                        error.combine(syn::Error::new(
+                            prev.field_name.span(),
+                            format!("previous use of short flag '{short}' here"),
+                        ));
+                        return Err(error);
                     }
 
                     if let Some(long) = long.clone() {
@@ -587,20 +587,19 @@ impl Args {
             }
         }
 
-        if let Some(subcmd) = &subcommand {
-            if let Some(arg) = last_positional
-                && (arg.repeating || arg.is_optional())
-            {
-                let mut error = syn::Error::new(
-                    arg.field_name.span(),
-                    "repeating or optional positional arguments cannot be combined with `subcommand`",
-                );
-                error.combine(syn::Error::new(
-                    subcmd.ident.span(),
-                    "repeating or optional positional arguments cannot be combined with `subcommand`",
-                ));
-                return Err(error);
-            }
+        if let Some(subcmd) = &subcommand
+            && let Some(arg) = last_positional
+            && (arg.repeating || arg.is_optional())
+        {
+            let mut error = syn::Error::new(
+                arg.field_name.span(),
+                "repeating or optional positional arguments cannot be combined with `subcommand`",
+            );
+            error.combine(syn::Error::new(
+                subcmd.ident.span(),
+                "repeating or optional positional arguments cannot be combined with `subcommand`",
+            ));
+            return Err(error);
         }
 
         // Validate usage of `inverse_of`.
@@ -716,44 +715,32 @@ impl Field {
             }));
         }
 
-        match (flag, &default) {
-            (Some(flag_span), Some(_)) => {
-                return Err(syn::Error::new(
-                    flag_span,
-                    "`flag` and `default` cannot be used together",
-                ));
-            }
-            _ => {}
+        if let (Some(flag_span), Some(_)) = (flag, &default) {
+            return Err(syn::Error::new(
+                flag_span,
+                "`flag` and `default` cannot be used together",
+            ));
         }
 
-        match (flag, &names) {
-            (Some(flag_span), None) => {
-                return Err(syn::Error::new(
-                    flag_span,
-                    "`flag` is not allowed on positional arguments; use `name` to make it a named flag",
-                ));
-            }
-            _ => {}
+        if let (Some(flag_span), None) = (flag, &names) {
+            return Err(syn::Error::new(
+                flag_span,
+                "`flag` is not allowed on positional arguments; use `name` to make it a named flag",
+            ));
         }
 
-        match (&default, &required) {
-            (Some(_), Some(req)) => {
-                return Err(syn::Error::new(
-                    req.span(),
-                    "`required` and `default` cannot be used together",
-                ));
-            }
-            _ => {}
+        if let (Some(_), Some(req)) = (&default, &required) {
+            return Err(syn::Error::new(
+                req.span(),
+                "`required` and `default` cannot be used together",
+            ));
         }
 
-        match (flag, &inverse_of) {
-            (None, Some(ident)) => {
-                return Err(syn::Error::new(
-                    ident.span(),
-                    "`inverse_of` must be used with `flag`",
-                ));
-            }
-            _ => {}
+        if let (None, Some(ident)) = (flag, &inverse_of) {
+            return Err(syn::Error::new(
+                ident.span(),
+                "`inverse_of` must be used with `flag`",
+            ));
         }
         if let Some(ident) = &inverse_of {
             if *ident == field.ident.clone().unwrap() {
@@ -814,7 +801,7 @@ impl Field {
             inner_type,
             wrapper_type: wrapper,
             required: required.is_some()
-                || (!flag.is_some() && default.is_none() && wrapper.is_none()),
+                || (flag.is_none() && default.is_none() && wrapper.is_none()),
             default,
             inverse_of,
             kind: arg_kind,

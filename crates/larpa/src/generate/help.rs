@@ -226,11 +226,7 @@ fn make_arg_desc(arg: &ArgumentDesc) -> Option<String> {
     for line in arg.description().unwrap_or("").split_inclusive('\n') {
         if first {
             first = false;
-            if line.ends_with('\n') {
-                out.push_str(&line[..line.len() - 1]);
-            } else {
-                out.push_str(line);
-            }
+            out.push_str(line.strip_suffix('\n').unwrap_or(line));
             if !supp.is_empty() {
                 out.push(' ');
                 out.push_str(&supp);
@@ -254,7 +250,7 @@ fn write_multiline(f: &mut Writer<'_>, text: &str) -> io::Result<()> {
     let indent = f.indentation();
     let mut first = true;
     for line in text.split_inclusive('\n') {
-        if !first && line != "\n" && line != "" {
+        if !first && line != "\n" && !line.is_empty() {
             write!(f, "{}", " ".repeat(indent))?;
         }
         first = false;

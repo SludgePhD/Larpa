@@ -292,7 +292,7 @@ impl Context {
 
         for (i, attr) in out.iter().enumerate() {
             for attr2 in &out[i + 1..] {
-                if attr.name.to_string() == attr2.name.to_string() {
+                if attr.name == attr2.name {
                     let on = match target {
                         Target::TopLevel => "type",
                         Target::Variant => "variant",
@@ -324,7 +324,7 @@ impl Context {
                 Target::Field => &field,
             };
             let name = &r.name;
-            if name.to_string() == "crate" {
+            if name == "crate" {
                 continue; // keywords don't work with this trick (even when replacing the "c" with a confusable)
             }
             f(&quote!(#m #name));
@@ -345,14 +345,11 @@ pub fn doc_comment(attrs: &[syn::Attribute]) -> syn::Result<Option<String>> {
             continue;
         };
         if nv.path.is_ident("doc") {
-            match &nv.value {
-                syn::Expr::Lit(lit) => {
-                    if let syn::Lit::Str(s) = &lit.lit {
-                        lines.push(s.value());
-                        continue;
-                    }
-                }
-                _ => {}
+            if let syn::Expr::Lit(lit) = &nv.value
+                && let syn::Lit::Str(s) = &lit.lit
+            {
+                lines.push(s.value());
+                continue;
             }
             // FIXME: awkward code flow due to `if let` guards being unstable
             return Err(syn::Error::new(
@@ -389,8 +386,8 @@ pub fn doc_comment(attrs: &[syn::Attribute]) -> syn::Result<Option<String>> {
         let line = &lines[i];
         let next = lines.get(i + 1);
         doc.push_str(line);
-        match next {
-            Some(next) => match next.chars().next() {
+        if let Some(next) = next {
+            match next.chars().next() {
                 Some(start) => {
                     if start.is_alphabetic() {
                         if !doc.ends_with('\n') {
@@ -404,8 +401,7 @@ pub fn doc_comment(attrs: &[syn::Attribute]) -> syn::Result<Option<String>> {
                     // Next line is empty.
                     doc.push_str("\n\n");
                 }
-            },
-            None => {}
+            }
         }
     }
 
